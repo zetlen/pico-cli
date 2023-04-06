@@ -1,64 +1,28 @@
-/* global process */
-const capCase = (str) =>
-  str.replaceAll(/-([a-z])/gi, (_, letter) => letter.toUpperCase());
-
-const NO_VALUE = Symbol.for("NO_VALUE");
-const startsWithNo = /^no[A-Z]/;
-function parseArgs(args) {
-  const flags = {};
-  const positional = [];
-  for (const arg of args) {
-    if (arg.startsWith("--")) {
-      let prop;
-      let value = NO_VALUE;
-      const assignment = arg.slice(2).split("=");
-      if (assignment.length > 2) {
-        throw new Error(
-          `Unrecognized argument: "${arg}". Too many equals signs.`
-        );
-      }
-      const isAssignment = assignment.length === 2;
-      prop = assignment[0];
-      if (isAssignment) {
-        value = assignment[1];
-      }
-      const dotPath = prop.split(".").map(capCase);
-      if (dotPath.length > 2) {
-        throw new Error(`Unrecognized argument: "${arg}". Too many dots.`);
-      }
-      let flagTarget = flags;
-      const isDotPath = dotPath.length === 2;
-      let [flag, subFlag] = dotPath;
-      if (isDotPath) {
-        if (typeof flags[flag] !== "object") {
-          flags[flag] = {};
+module.exports = (/* istanbul ignore next */ args = process.argv.slice(2)) =>
+  args.reduce(
+    (flags, arg) => {
+      if (arg.startsWith("--")) {
+        const equalsPos = arg.indexOf("=");
+        const isAssignment = equalsPos > 3;
+        const prop = arg
+          .slice(2, isAssignment ? equalsPos : arg.length)
+          .replaceAll(/-([a-z])/gi, (_, letter) => letter.toUpperCase());
+        let value = true;
+        if (isAssignment) {
+          value = arg.slice(equalsPos + 1);
+          try {
+            value = JSON.parse(value);
+          } catch (e) {
+            // accept as a barestring
+          }
         }
-        flagTarget = flags[flag];
-        flag = subFlag;
-      }
-      if (value === NO_VALUE) {
-        value = true;
-        if (startsWithNo.test(flag)) {
-          flagTarget[flag.charAt(2).toLowerCase() + flag.slice(3)] = false;
-        }
-      } else if (value === "undefined") {
-        value = undefined;
+        flags[prop] = value;
+        if (/^no[A-Z]/.test(prop))
+          flags[prop[2].toLowerCase() + prop.slice(3)] = !value;
       } else {
-        try {
-          value = JSON.parse(value);
-        } catch (e) {
-          // probably a barestring
-        }
+        flags._.push(arg);
       }
-      flagTarget[flag] = value;
-    } else {
-      positional.push(arg);
-    }
-  }
-  return { ...flags, _: positional };
-}
-
-/* istanbul ignore next */
-module.exports = () => parseArgs(process.argv.slice(2));
-
-module.exports.parseArgs = parseArgs;
+      return flags;
+    },
+    { _: [] }
+  );

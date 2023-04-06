@@ -1,4 +1,4 @@
-const { parseArgs } = require("./index.js");
+const picocli = require("./index.js");
 
 const passes = {
   "positional and flag": [
@@ -21,58 +21,39 @@ const passes = {
       noBaz: true,
     },
   ],
-  "special case for 'undefined'": [
-    ["--baz=undefined"],
+  "equals sign starts flag": [
+    ["--=jkhsd"],
     {
-      baz: undefined,
+      "=jkhsd": true,
     },
   ],
-  barestring: [
-    ["--hoop=doop", '--floop={"zoop":[5]}', "--floop.zoop=15"],
+  "equals sign is flag": [
+    ["--="],
+    {
+      "=": true,
+    },
+  ],
+  "equals sign flag does no assignment": [
+    ["--==gnk"],
+    {
+      "==gnk": true,
+    },
+  ],
+  json: [
+    ["--hoop=doop", '--floop={"zoop":[5]}'],
     {
       hoop: "doop",
       floop: {
-        zoop: 15,
+        zoop: [5],
       },
     },
-  ],
-  "dot path": [
-    ["sea", "--under", "--distance.leagues=10000"],
-    {
-      _: ["sea"],
-      under: true,
-      distance: {
-        leagues: 10000,
-      },
-    },
-  ],
-};
-
-const fails = {
-  "too many equals signs": [
-    ["--what=is=this"],
-    'Unrecognized argument: "--what=is=this". Too many equals signs.',
-  ],
-  "too deep a dot path": [
-    ["--num.thousand.leagues=10"],
-    'Unrecognized argument: "--num.thousand.leagues=10". Too many dots.',
   ],
 };
 
 Object.entries(passes).forEach(([name, [args, expected]]) =>
   describe(name, () => {
     test(`> <cmd> ${args.join(" ")}`, () => {
-      expect(parseArgs(args)).toMatchObject(expected);
+      expect(picocli(args)).toMatchObject(expected);
     });
   })
 );
-
-describe("throws exceptions on", () => {
-  Object.entries(fails).forEach(([name, [args, message]]) => {
-    describe(name, () => {
-      test(`> <cmd> ${args.join(" ")}`, () => {
-        expect(() => parseArgs(args)).toThrow(message);
-      });
-    });
-  });
-});
