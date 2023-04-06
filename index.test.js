@@ -1,4 +1,4 @@
-const picocli = require("./index.js");
+import picocli from "./";
 
 const passes = {
   "positional and flag": [

@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   clearMocks: true,
   collectCoverage: true,
   coverageDirectory: "coverage",
@@ -16,4 +16,5 @@ module.exports = {
     }) ||
     undefined,
   testEnvironment: "jest-environment-node",
+  transform: {},
 };

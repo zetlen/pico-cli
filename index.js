@@ -1,4 +1,4 @@
-module.exports = (/* istanbul ignore next */ args = process.argv.slice(2)) =>
+export default (/* istanbul ignore next */ args = process.argv.slice(2)) =>
   args.reduce(
     (flags, arg) => {
       if (arg.startsWith("--")) {
