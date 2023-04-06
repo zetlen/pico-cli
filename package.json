@@ -1,0 +1,21 @@
+{
+  "name": "pico-cli",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "tap --100",
+    "test:watch": "tap --watch"
+  },
+  "tap": {
+    "coverage-report": "lcovonly"
+  },
+  "keywords": [],
+  "author": "James Zetlen",
+  "type": "module",
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^8.37.0",
+    "tap": "^16.3.4"
+  }
+}
